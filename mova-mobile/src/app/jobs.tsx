@@ -126,21 +126,39 @@ export default function JobsScreen() {
     );
   };
 
+  const handleContinue = () => {
+    if (selectedJobs.length === 0) {
+      return;
+    }
+
+    router.push({
+      pathname: "/informations",
+      params: {
+        sectors: selectedSectors.join(","),
+        jobs: selectedJobs.join(","),
+      },
+    });
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.content}
       >
+        {/* RETOUR */}
         <TouchableOpacity
           style={styles.back}
           onPress={() => router.back()}
+          activeOpacity={0.7}
         >
           <Text style={styles.backText}>‹</Text>
         </TouchableOpacity>
 
+        {/* ÉTAPE */}
         <Text style={styles.step}>ÉTAPE 2 SUR 5</Text>
 
+        {/* TITRE */}
         <Text style={styles.title}>
           Quels sont{"\n"}
           <Text style={styles.accent}>vos métiers ?</Text>
@@ -151,10 +169,11 @@ export default function JobsScreen() {
           Vous pourrez les modifier plus tard.
         </Text>
 
+        {/* MÉTIERS PAR SECTEUR */}
         {selectedSectors.map((sector) => (
           <View key={sector} style={styles.section}>
             <Text style={styles.sectionTitle}>
-              {sectorNames[sector]}
+              {sectorNames[sector] ?? sector}
             </Text>
 
             <View style={styles.jobs}>
@@ -197,16 +216,21 @@ export default function JobsScreen() {
           </View>
         ))}
 
+        {/* COMPTEUR */}
         {selectedJobs.length > 0 && (
           <Text style={styles.counter}>
-            {selectedJobs.length} métier
-            {selectedJobs.length > 1 ? "s" : ""} sélectionné
-            {selectedJobs.length > 1 ? "s" : ""}
+            {selectedJobs.length}{" "}
+            {selectedJobs.length === 1
+              ? "métier sélectionné"
+              : "métiers sélectionnés"}
           </Text>
         )}
 
+        {/* CONTINUER */}
         <TouchableOpacity
           disabled={selectedJobs.length === 0}
+          activeOpacity={selectedJobs.length > 0 ? 0.85 : 1}
+          onPress={handleContinue}
           style={[
             styles.button,
             selectedJobs.length === 0 && styles.buttonDisabled,
@@ -351,6 +375,7 @@ const styles = StyleSheet.create({
   counter: {
     textAlign: "center",
     color: "#695AE8",
+    fontSize: 14,
     fontWeight: "700",
     marginBottom: 15,
   },

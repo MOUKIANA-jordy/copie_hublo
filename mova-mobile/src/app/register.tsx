@@ -1,5 +1,6 @@
 import { router } from "expo-router";
 import { useState } from "react";
+import { useRegistration } from "../context/RegistrationContext";
 import {
   SafeAreaView,
   ScrollView,
