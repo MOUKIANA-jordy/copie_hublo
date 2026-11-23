@@ -17,25 +17,71 @@ type Sector = {
 };
 
 const sectors: Sector[] = [
-  { id: "sante", icon: "🏥", name: "Santé & médico-social" },
-  { id: "restauration", icon: "🍽️", name: "Restauration" },
-  { id: "hotellerie", icon: "🏨", name: "Hôtellerie" },
-  { id: "logistique", icon: "📦", name: "Logistique" },
-  { id: "securite", icon: "🛡️", name: "Sécurité" },
-  { id: "evenementiel", icon: "🎪", name: "Événementiel" },
-  { id: "commerce", icon: "🛍️", name: "Commerce" },
-  { id: "nettoyage", icon: "🧹", name: "Nettoyage" },
-  { id: "btp", icon: "🏗️", name: "BTP" },
-  { id: "transport", icon: "🚚", name: "Transport" },
+  {
+    id: "sante",
+    icon: "🏥",
+    name: "Santé & médico-social",
+  },
+  {
+    id: "restauration",
+    icon: "🍽️",
+    name: "Restauration",
+  },
+  {
+    id: "hotellerie",
+    icon: "🏨",
+    name: "Hôtellerie",
+  },
+  {
+    id: "logistique",
+    icon: "📦",
+    name: "Logistique",
+  },
+  {
+    id: "securite",
+    icon: "🛡️",
+    name: "Sécurité",
+  },
+  {
+    id: "evenementiel",
+    icon: "🎪",
+    name: "Événementiel",
+  },
+  {
+    id: "commerce",
+    icon: "🛍️",
+    name: "Commerce",
+  },
+  {
+    id: "nettoyage",
+    icon: "🧹",
+    name: "Nettoyage",
+  },
+  {
+    id: "btp",
+    icon: "🏗️",
+    name: "BTP",
+  },
+  {
+    id: "transport",
+    icon: "🚚",
+    name: "Transport",
+  },
 ];
 
 export default function RegisterScreen() {
-  const [selectedSectors, setSelectedSectors] = useState<string[]>([]);
+  const { data, updateRegistration } = useRegistration();
+
+  const [selectedSectors, setSelectedSectors] = useState<string[]>(
+    data.sectors
+  );
 
   const toggleSector = (id: string) => {
     setSelectedSectors((current) => {
       if (current.includes(id)) {
-        return current.filter((sectorId) => sectorId !== id);
+        return current.filter(
+          (sectorId) => sectorId !== id
+        );
       }
 
       return [...current, id];
@@ -47,12 +93,13 @@ export default function RegisterScreen() {
       return;
     }
 
-    router.push({
-      pathname: "/jobs",
-      params: {
-        sectors: selectedSectors.join(","),
-      },
+    // Sauvegarde les secteurs dans le contexte global
+    updateRegistration({
+      sectors: selectedSectors,
     });
+
+    // Plus besoin de transmettre les secteurs dans l'URL
+    router.push("/jobs");
   };
 
   return (
@@ -64,42 +111,56 @@ export default function RegisterScreen() {
         <TouchableOpacity
           style={styles.back}
           onPress={() => router.back()}
+          activeOpacity={0.7}
         >
           <Text style={styles.backText}>‹</Text>
         </TouchableOpacity>
 
-        <Text style={styles.step}>ÉTAPE 1 SUR 5</Text>
+        <Text style={styles.step}>
+          ÉTAPE 1 SUR 5
+        </Text>
 
         <Text style={styles.title}>
           Quels secteurs{"\n"}
-          <Text style={styles.accent}>vous intéressent ?</Text>
+          <Text style={styles.accent}>
+            vous intéressent ?
+          </Text>
         </Text>
 
         <Text style={styles.subtitle}>
-          Sélectionnez un ou plusieurs secteurs. MOVA personnalisera
-          ensuite les métiers et les missions qui vous correspondent.
+          Sélectionnez un ou plusieurs secteurs. MOVA
+          personnalisera ensuite les métiers et les missions
+          qui vous correspondent.
         </Text>
 
         <View style={styles.grid}>
           {sectors.map((sector) => {
-            const selected = selectedSectors.includes(sector.id);
+            const selected =
+              selectedSectors.includes(sector.id);
 
             return (
               <TouchableOpacity
                 key={sector.id}
                 activeOpacity={0.8}
-                onPress={() => toggleSector(sector.id)}
+                onPress={() =>
+                  toggleSector(sector.id)
+                }
                 style={[
                   styles.sector,
-                  selected && styles.sectorSelected,
+                  selected &&
+                    styles.sectorSelected,
                 ]}
               >
                 <View style={styles.sectorTop}>
-                  <Text style={styles.icon}>{sector.icon}</Text>
+                  <Text style={styles.icon}>
+                    {sector.icon}
+                  </Text>
 
                   {selected && (
                     <View style={styles.check}>
-                      <Text style={styles.checkText}>✓</Text>
+                      <Text style={styles.checkText}>
+                        ✓
+                      </Text>
                     </View>
                   )}
                 </View>
@@ -107,7 +168,8 @@ export default function RegisterScreen() {
                 <Text
                   style={[
                     styles.sectorText,
-                    selected && styles.sectorTextSelected,
+                    selected &&
+                      styles.sectorTextSelected,
                   ]}
                 >
                   {sector.name}
@@ -127,12 +189,19 @@ export default function RegisterScreen() {
         )}
 
         <TouchableOpacity
-          activeOpacity={selectedSectors.length > 0 ? 0.85 : 1}
-          disabled={selectedSectors.length === 0}
+          activeOpacity={
+            selectedSectors.length > 0
+              ? 0.85
+              : 1
+          }
+          disabled={
+            selectedSectors.length === 0
+          }
           onPress={handleContinue}
           style={[
             styles.button,
-            selectedSectors.length === 0 && styles.buttonDisabled,
+            selectedSectors.length === 0 &&
+              styles.buttonDisabled,
           ]}
         >
           <Text

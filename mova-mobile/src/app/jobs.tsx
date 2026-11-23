@@ -1,5 +1,11 @@
-import { router, useLocalSearchParams } from "expo-router";
-import { useMemo, useState } from "react";
+import { router } from "expo-router";
+import { useState } from "react";
+
+import {
+  SelectedJob,
+  useRegistration,
+} from "../context/RegistrationContext";
+
 import {
   SafeAreaView,
   ScrollView,
@@ -9,86 +15,244 @@ import {
   View,
 } from "react-native";
 
-const jobsBySector: Record<string, string[]> = {
+type JobDefinition = {
+  name: string;
+  slug: string;
+};
+
+const jobsBySector: Record<string, JobDefinition[]> = {
   sante: [
-    "Aide-soignant",
-    "Infirmier",
-    "AES",
-    "Auxiliaire de vie",
-    "Agent de service hospitalier",
-    "Éducateur spécialisé",
+    {
+      name: "Aide-soignant",
+      slug: "aide-soignant",
+    },
+    {
+      name: "Infirmier",
+      slug: "infirmier",
+    },
+    {
+      name: "AES",
+      slug: "aes",
+    },
+    {
+      name: "Auxiliaire de vie",
+      slug: "auxiliaire-de-vie",
+    },
+    {
+      name: "Agent de service hospitalier",
+      slug: "agent-de-service-hospitalier",
+    },
+    {
+      name: "Éducateur spécialisé",
+      slug: "educateur-specialise",
+    },
   ],
 
   restauration: [
-    "Serveur",
-    "Cuisinier",
-    "Commis de cuisine",
-    "Plongeur",
-    "Barman",
-    "Maître d'hôtel",
+    {
+      name: "Serveur",
+      slug: "serveur",
+    },
+    {
+      name: "Cuisinier",
+      slug: "cuisinier",
+    },
+    {
+      name: "Commis de cuisine",
+      slug: "commis-de-cuisine",
+    },
+    {
+      name: "Plongeur",
+      slug: "plongeur",
+    },
+    {
+      name: "Barman",
+      slug: "barman",
+    },
+    {
+      name: "Maître d'hôtel",
+      slug: "maitre-dhotel",
+    },
   ],
 
   hotellerie: [
-    "Réceptionniste",
-    "Femme / Valet de chambre",
-    "Gouvernant",
-    "Bagagiste",
-    "Veilleur de nuit",
+    {
+      name: "Réceptionniste",
+      slug: "receptionniste",
+    },
+    {
+      name: "Femme / Valet de chambre",
+      slug: "femme-valet-de-chambre",
+    },
+    {
+      name: "Gouvernant",
+      slug: "gouvernant",
+    },
+    {
+      name: "Bagagiste",
+      slug: "bagagiste",
+    },
+    {
+      name: "Veilleur de nuit",
+      slug: "veilleur-de-nuit",
+    },
   ],
 
   logistique: [
-    "Préparateur de commandes",
-    "Manutentionnaire",
-    "Cariste",
-    "Magasinier",
-    "Agent logistique",
+    {
+      name: "Préparateur de commandes",
+      slug: "preparateur-de-commandes",
+    },
+    {
+      name: "Manutentionnaire",
+      slug: "manutentionnaire",
+    },
+    {
+      name: "Cariste",
+      slug: "cariste",
+    },
+    {
+      name: "Magasinier",
+      slug: "magasinier",
+    },
+    {
+      name: "Agent logistique",
+      slug: "agent-logistique",
+    },
   ],
 
   securite: [
-    "Agent de sécurité",
-    "Agent SSIAP",
-    "Agent de sûreté",
-    "Agent événementiel",
+    {
+      name: "Agent de sécurité",
+      slug: "agent-de-securite",
+    },
+    {
+      name: "Agent SSIAP",
+      slug: "agent-ssiap",
+    },
+    {
+      name: "Agent de sûreté",
+      slug: "agent-de-surete",
+    },
+    {
+      name: "Agent événementiel",
+      slug: "agent-evenementiel",
+    },
   ],
 
   evenementiel: [
-    "Hôte / Hôtesse",
-    "Serveur événementiel",
-    "Agent d'accueil",
-    "Manutentionnaire événementiel",
-    "Régisseur",
+    {
+      name: "Hôte / Hôtesse",
+      slug: "hote-hotesse",
+    },
+    {
+      name: "Serveur événementiel",
+      slug: "serveur-evenementiel",
+    },
+    {
+      name: "Agent d'accueil",
+      slug: "agent-daccueil",
+    },
+    {
+      name: "Manutentionnaire événementiel",
+      slug: "manutentionnaire-evenementiel",
+    },
+    {
+      name: "Régisseur",
+      slug: "regisseur",
+    },
   ],
 
   commerce: [
-    "Vendeur",
-    "Caissier",
-    "Employé libre-service",
-    "Conseiller de vente",
-    "Inventoriste",
+    {
+      name: "Vendeur",
+      slug: "vendeur",
+    },
+    {
+      name: "Caissier",
+      slug: "caissier",
+    },
+    {
+      name: "Employé libre-service",
+      slug: "employe-libre-service",
+    },
+    {
+      name: "Conseiller de vente",
+      slug: "conseiller-de-vente",
+    },
+    {
+      name: "Inventoriste",
+      slug: "inventoriste",
+    },
   ],
 
   nettoyage: [
-    "Agent d'entretien",
-    "Agent de nettoyage",
-    "Agent de propreté",
-    "Laveur de vitres",
+    {
+      name: "Agent d'entretien",
+      slug: "agent-dentretien",
+    },
+    {
+      name: "Agent de nettoyage",
+      slug: "agent-de-nettoyage",
+    },
+    {
+      name: "Agent de propreté",
+      slug: "agent-de-proprete",
+    },
+    {
+      name: "Laveur de vitres",
+      slug: "laveur-de-vitres",
+    },
   ],
 
   btp: [
-    "Manœuvre",
-    "Maçon",
-    "Électricien",
-    "Plombier",
-    "Peintre",
-    "Carreleur",
+    {
+      name: "Manœuvre",
+      slug: "manoeuvre",
+    },
+    {
+      name: "Maçon",
+      slug: "macon",
+    },
+    {
+      name: "Électricien",
+      slug: "electricien",
+    },
+    {
+      name: "Plombier",
+      slug: "plombier",
+    },
+    {
+      name: "Peintre",
+      slug: "peintre",
+    },
+    {
+      name: "Carreleur",
+      slug: "carreleur",
+    },
   ],
 
   transport: [
-    "Chauffeur-livreur",
-    "Livreur",
-    "Conducteur",
-    "Coursier",
-    "Déménageur",
+    {
+      name: "Chauffeur-livreur",
+      slug: "chauffeur-livreur",
+    },
+    {
+      name: "Livreur",
+      slug: "livreur",
+    },
+    {
+      name: "Conducteur",
+      slug: "conducteur",
+    },
+    {
+      name: "Coursier",
+      slug: "coursier",
+    },
+    {
+      name: "Déménageur",
+      slug: "demenageur",
+    },
   ],
 };
 
@@ -106,24 +270,56 @@ const sectorNames: Record<string, string> = {
 };
 
 export default function JobsScreen() {
-  const params = useLocalSearchParams<{ sectors?: string }>();
+  const { data, updateRegistration } = useRegistration();
 
-  const selectedSectors = useMemo(
-    () =>
-      typeof params.sectors === "string"
-        ? params.sectors.split(",").filter(Boolean)
-        : [],
-    [params.sectors]
+  const selectedSectors = data.sectors;
+
+  const [selectedJobs, setSelectedJobs] = useState<SelectedJob[]>(
+    data.jobs
   );
 
-  const [selectedJobs, setSelectedJobs] = useState<string[]>([]);
-
-  const toggleJob = (job: string) => {
-    setSelectedJobs((current) =>
-      current.includes(job)
-        ? current.filter((item) => item !== job)
-        : [...current, job]
+  const isJobSelected = (
+    sector: string,
+    slug: string
+  ) => {
+    return selectedJobs.some(
+      (job) =>
+        job.sector === sector &&
+        job.slug === slug
     );
+  };
+
+  const toggleJob = (
+    sector: string,
+    job: JobDefinition
+  ) => {
+    const selected = isJobSelected(
+      sector,
+      job.slug
+    );
+
+    if (selected) {
+      setSelectedJobs((current) =>
+        current.filter(
+          (item) =>
+            !(
+              item.sector === sector &&
+              item.slug === job.slug
+            )
+        )
+      );
+
+      return;
+    }
+
+    setSelectedJobs((current) => [
+      ...current,
+      {
+        sector,
+        slug: job.slug,
+        name: job.name,
+      },
+    ]);
   };
 
   const handleContinue = () => {
@@ -131,13 +327,11 @@ export default function JobsScreen() {
       return;
     }
 
-    router.push({
-      pathname: "/informations",
-      params: {
-        sectors: selectedSectors.join(","),
-        jobs: selectedJobs.join(","),
-      },
+    updateRegistration({
+      jobs: selectedJobs,
     });
+
+    router.push("/informations");
   };
 
   return (
@@ -146,77 +340,100 @@ export default function JobsScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.content}
       >
-        {/* RETOUR */}
         <TouchableOpacity
           style={styles.back}
           onPress={() => router.back()}
           activeOpacity={0.7}
         >
-          <Text style={styles.backText}>‹</Text>
+          <Text style={styles.backText}>
+            ‹
+          </Text>
         </TouchableOpacity>
 
-        {/* ÉTAPE */}
-        <Text style={styles.step}>ÉTAPE 2 SUR 5</Text>
+        <Text style={styles.step}>
+          ÉTAPE 2 SUR 5
+        </Text>
 
-        {/* TITRE */}
         <Text style={styles.title}>
           Quels sont{"\n"}
-          <Text style={styles.accent}>vos métiers ?</Text>
+          <Text style={styles.accent}>
+            vos métiers ?
+          </Text>
         </Text>
 
         <Text style={styles.subtitle}>
-          Choisissez les métiers que vous pouvez réellement exercer.
-          Vous pourrez les modifier plus tard.
+          Choisissez les métiers que vous pouvez
+          réellement exercer. Vous pourrez les modifier
+          plus tard.
         </Text>
 
-        {/* MÉTIERS PAR SECTEUR */}
         {selectedSectors.map((sector) => (
-          <View key={sector} style={styles.section}>
+          <View
+            key={sector}
+            style={styles.section}
+          >
             <Text style={styles.sectionTitle}>
               {sectorNames[sector] ?? sector}
             </Text>
 
             <View style={styles.jobs}>
-              {(jobsBySector[sector] ?? []).map((job) => {
-                const selected = selectedJobs.includes(job);
+              {(jobsBySector[sector] ?? []).map(
+                (job) => {
+                  const selected =
+                    isJobSelected(
+                      sector,
+                      job.slug
+                    );
 
-                return (
-                  <TouchableOpacity
-                    key={`${sector}-${job}`}
-                    activeOpacity={0.8}
-                    onPress={() => toggleJob(job)}
-                    style={[
-                      styles.job,
-                      selected && styles.jobSelected,
-                    ]}
-                  >
-                    <Text
+                  return (
+                    <TouchableOpacity
+                      key={`${sector}-${job.slug}`}
+                      activeOpacity={0.8}
+                      onPress={() =>
+                        toggleJob(
+                          sector,
+                          job
+                        )
+                      }
                       style={[
-                        styles.jobText,
-                        selected && styles.jobTextSelected,
+                        styles.job,
+                        selected &&
+                          styles.jobSelected,
                       ]}
                     >
-                      {job}
-                    </Text>
+                      <Text
+                        style={[
+                          styles.jobText,
+                          selected &&
+                            styles.jobTextSelected,
+                        ]}
+                      >
+                        {job.name}
+                      </Text>
 
-                    <View
-                      style={[
-                        styles.circle,
-                        selected && styles.circleSelected,
-                      ]}
-                    >
-                      {selected && (
-                        <Text style={styles.check}>✓</Text>
-                      )}
-                    </View>
-                  </TouchableOpacity>
-                );
-              })}
+                      <View
+                        style={[
+                          styles.circle,
+                          selected &&
+                            styles.circleSelected,
+                        ]}
+                      >
+                        {selected && (
+                          <Text
+                            style={styles.check}
+                          >
+                            ✓
+                          </Text>
+                        )}
+                      </View>
+                    </TouchableOpacity>
+                  );
+                }
+              )}
             </View>
           </View>
         ))}
 
-        {/* COMPTEUR */}
         {selectedJobs.length > 0 && (
           <Text style={styles.counter}>
             {selectedJobs.length}{" "}
@@ -226,14 +443,20 @@ export default function JobsScreen() {
           </Text>
         )}
 
-        {/* CONTINUER */}
         <TouchableOpacity
-          disabled={selectedJobs.length === 0}
-          activeOpacity={selectedJobs.length > 0 ? 0.85 : 1}
+          disabled={
+            selectedJobs.length === 0
+          }
+          activeOpacity={
+            selectedJobs.length > 0
+              ? 0.85
+              : 1
+          }
           onPress={handleContinue}
           style={[
             styles.button,
-            selectedJobs.length === 0 && styles.buttonDisabled,
+            selectedJobs.length === 0 &&
+              styles.buttonDisabled,
           ]}
         >
           <Text
