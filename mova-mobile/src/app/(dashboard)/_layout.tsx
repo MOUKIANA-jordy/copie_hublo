@@ -1,13 +1,36 @@
-import { Tabs } from "expo-router";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { Redirect, Tabs } from "expo-router";
 import { ActivityIndicator, View } from "react-native";
+
 import { useAuth } from "../../context/AuthContext";
 
 const PURPLE = "#695AE8";
 const GRAY = "#85818C";
 
 export default function DashboardLayout() {
+  const { user, loading } = useAuth();
+
+  // Attendre la vérification de la session
+  if (loading) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          backgroundColor: "#FAF9FC",
+        }}
+      >
+        <ActivityIndicator size="large" color={PURPLE} />
+      </View>
+    );
+  }
+
+  // Empêcher l'accès au dashboard sans connexion
+  if (!user) {
+    return <Redirect href="/login" />;
+  }
+
   return (
     <Tabs
       screenOptions={{

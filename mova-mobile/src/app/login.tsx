@@ -1,6 +1,6 @@
 import { router } from "expo-router";
 import { useState } from "react";
-import * as SecureStore from "expo-secure-store";
+import { useAuth } from "../context/AuthContext";
 
 import {
   ActivityIndicator,
@@ -21,6 +21,7 @@ export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const { signIn } = useAuth();
 
   const handleLogin = async () => {
     
@@ -95,15 +96,7 @@ export default function LoginScreen() {
         );
       }
 
-      await SecureStore.setItemAsync(
-        "mova_access_token",
-        data.access
-      );
-
-      await SecureStore.setItemAsync(
-        "mova_refresh_token",
-        data.refresh
-      );
+      await signIn(data.access, data.refresh);
 
       setPassword("");
 
